@@ -1,5 +1,5 @@
 import path from 'path'
-import * as TS from 'typescript'
+import ts, * as TS from 'typescript'
 import { TypeScriptNodeSearch } from './nodeSearch'
 
 /**
@@ -9,6 +9,7 @@ function createSearch (program: TS.Program): TypeScriptNodeSearch {
   return new TypeScriptNodeSearch(program)
 }
 
+/** copy from https://github.com/YousefED/typescript-json-schema/blob/c7fc59a913922df32b2166c796fc1a00660a99cb/typescript-json-schema.ts */
 /**
  * 从`tsconfig.json`里读取配置
  *
@@ -62,4 +63,27 @@ export function readProgramFromTsConfig (tsConfigFile: string, entry?: string): 
     projectReferences: configParseResult.projectReferences
   })
   return createSearch(program)
+}
+
+export function createProgramFromFile (
+  files: string[],
+  jsonCompilerOptions: any = {},
+  basePath: string = './'
+): ts.Program {
+  const compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options
+  const options: ts.CompilerOptions = {
+    noEmit: true,
+    emitDecoratorMetadata: true,
+    experimentalDecorators: true,
+    target: ts.ScriptTarget.ES5,
+    module: ts.ModuleKind.CommonJS,
+    allowUnusedLabels: true
+  }
+  for (const k in compilerOptions) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (compilerOptions.hasOwnProperty(k)) {
+      options[k] = compilerOptions[k]
+    }
+  }
+  return ts.createProgram(files, options)
 }
