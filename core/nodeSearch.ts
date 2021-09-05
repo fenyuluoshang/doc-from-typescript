@@ -17,8 +17,15 @@ export class TypeScriptNodeSearch {
    */
   protected readonly typeChecker: ts.TypeChecker
 
-  public constructor (protected readonly program: ts.Program) {
-    this.actionNode = program.getSourceFiles()
+  public constructor (protected readonly program: ts.Program, workDir?: string, files?: string[]) {
+    this.actionNode = program.getSourceFiles().filter(item => {
+      if (workDir != null) {
+        return item.fileName.startsWith(workDir)
+      } else if (files != null) {
+        return files.includes(item.fileName)
+      }
+      return true
+    })
     this.typeChecker = program.getTypeChecker()
   }
 

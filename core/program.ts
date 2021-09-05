@@ -5,8 +5,8 @@ import { TypeScriptNodeSearch } from './nodeSearch'
 /**
  * 进入Node筛选节点
  */
-function createSearch (program: TS.Program): TypeScriptNodeSearch {
-  return new TypeScriptNodeSearch(program)
+function createSearch (program: TS.Program, workDir?: string, files?: string[]): TypeScriptNodeSearch {
+  return new TypeScriptNodeSearch(program, workDir, files)
 }
 
 /** copy from https://github.com/YousefED/typescript-json-schema/blob/c7fc59a913922df32b2166c796fc1a00660a99cb/typescript-json-schema.ts */
@@ -62,14 +62,14 @@ export function readProgramFromTsConfig (tsConfigFile: string, entry?: string): 
     options,
     projectReferences: configParseResult.projectReferences
   })
-  return createSearch(program)
+  return createSearch(program, path.dirname(tsConfigFile))
 }
 
 export function createProgramFromFile (
   files: string[],
   jsonCompilerOptions: any = {},
   basePath: string = './'
-): ts.Program {
+): TypeScriptNodeSearch {
   const compilerOptions = ts.convertCompilerOptionsFromJson(jsonCompilerOptions, basePath).options
   const options: ts.CompilerOptions = {
     noEmit: true,
@@ -85,5 +85,6 @@ export function createProgramFromFile (
       options[k] = compilerOptions[k]
     }
   }
-  return ts.createProgram(files, options)
+  const program = ts.createProgram(files, options)
+  return createSearch(program, undefined, files)
 }
